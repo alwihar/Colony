@@ -1,0 +1,9 @@
+{
+  "name": "coding-challenge-transactions-list",
+  "version": "1.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JoinColony/coding-challenge-transactions-list.git"
+  }
+}

@@ -3,9 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 
 import { Actions } from "../types";
-import { closeModal, openModal } from "../store/actions"
-import { RootState } from "../store/reducers"
-import {formatEther} from "ethers";
+import { closeModal, openModal } from "../store/actions";
+import { RootState } from "../store/reducers";
+import { convertToETh } from "../helpers/utils";
 
 const SendTransaction: React.FC = () => {
   const isModalOpen = useSelector((state: RootState) => state.isModalOpen);
@@ -142,7 +142,7 @@ const SendTransaction: React.FC = () => {
                     id="input-amount"
                     className="opacity-70 pointer-events-none py-3 px-4 block bg-gray-50 border-gray-800 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 w-full"
                     placeholder="Amount"
-                    value={formatEther(BigInt(txDetails?.value))}
+                    value={convertToETh(txDetails?.value)}
                     disabled
                 />
                 {errors.value && <p>{errors.value}</p>}

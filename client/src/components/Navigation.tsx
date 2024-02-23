@@ -7,6 +7,7 @@ import SendTransaction from "./SendTransaction";
 import { setWallet } from "../store/actions";
 import { RootState } from "../store/reducers"
 
+// added metamask module to access the wallet
 const metamask = metamaskModule({options: {}});
 
 const onboard = Onboard({

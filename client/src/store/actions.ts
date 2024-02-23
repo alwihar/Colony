@@ -1,7 +1,6 @@
-import {WalletState} from "@web3-onboard/core";
-
 import {Actions} from "../types";
 
+// added actions for global states
 export const openModal = () => ({
     type: Actions.OpenModal,
 });

@@ -1,9 +1,10 @@
 import React from "react";
 import { useQuery } from "@apollo/client";
+
 import { GetSingleTransaction } from "../queries";
 import { SingleTransactionData } from "../types";
 import { navigate } from "./NaiveRouter";
-import {formatEther} from "ethers";
+import { convertToETh } from "../helpers/utils";
 
 interface SingleTransactionProps {
   id: string | null;
@@ -67,7 +68,7 @@ const SingleTransaction: React.FC<SingleTransactionProps> = ({ id }) => {
             <span className="font-bold">Recipient Address:</span> {to}
           </p>
           <p>
-            <span className="font-bold">Amount:</span> {formatEther(BigInt(`${value}`))} ETH
+            <span className="font-bold">Amount:</span> {convertToETh(`${value}`)} ETH
           </p>
         </div>
       </div>

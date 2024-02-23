@@ -16,6 +16,7 @@ import { navigate } from "../components/NaiveRouter";
 import { RootState } from "./reducers"
 import { TransactionDetails } from "../types"
 
+// preparing transaction details before sending the tx
 function* prepareTransactionDetails() {
   const provider = new JsonRpcProvider("http://localhost:8545");
   const accounts: Array<{ address: string }> = yield provider.listAccounts();
@@ -74,6 +75,7 @@ function* sendTransaction() {
       variables,
     });
 
+    // navigating to the single tx screen
     navigate(`/transaction/${receipt.hash}`);
 
     yield apolloClient.query({
@@ -81,6 +83,7 @@ function* sendTransaction() {
       fetchPolicy: 'network-only'
     });
 
+    // closing the send tx modal, state managed globally
     yield put(closeModal());
 
   } catch (error) {

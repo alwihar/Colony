@@ -23,6 +23,11 @@ export interface SingleTransactionData {
   getTransaction: Transaction;
 }
 
+export interface TransactionDetails {
+  to: string,
+  value: number
+}
+
 export type Action<P> = {
   type: Actions;
   payload: P;
@@ -30,5 +35,10 @@ export type Action<P> = {
 
 export enum Actions {
   SendTransaction = "SEND_TRANSACTION",
+  PrepareTransactionDetails = "PREPARE_TRANSACTION_DETAILS",
+  OpenModal= "OPEN_MODAL",
+  CloseModal = "CLOSE_MODAL",
+  SetTransactionDetails = "SET_TRANSACTION_DETAILS",
+  SetWallet = "SET_WALLET"
 }
 

@@ -1,24 +1,23 @@
-import { takeEvery } from "redux-saga/effects";
+import { takeEvery, put, select, all } from "redux-saga/effects";
 import {
   JsonRpcProvider,
   Transaction,
   TransactionResponse,
   TransactionReceipt,
   BrowserProvider,
-  Signer,
+  Signer
 } from "ethers";
 
 import apolloClient from "../apollo/client";
 import { Actions } from "../types";
-import { SaveTransaction } from "../queries";
+import { closeModal, setTransactionDetails } from "./actions"
+import { SaveTransaction, GetAllTransactions } from "../queries";
+import { navigate } from "../components/NaiveRouter";
+import { RootState } from "./reducers"
+import { TransactionDetails } from "../types"
 
-function* sendTransaction() {
+function* prepareTransactionDetails() {
   const provider = new JsonRpcProvider("http://localhost:8545");
-
-  const walletProvider = new BrowserProvider(window.web3.currentProvider);
-
-  const signer: Signer = yield walletProvider.getSigner();
-
   const accounts: Array<{ address: string }> = yield provider.listAccounts();
 
   const randomAddress = () => {
@@ -28,10 +27,27 @@ function* sendTransaction() {
     return accounts[random].address;
   };
 
-  const transaction = {
+  const transactionDetails = {
     to: randomAddress(),
-    value: 1000000000000000000,
+    value: 1000
   };
+
+  // Set the transaction details in the global state
+  yield put(setTransactionDetails(transactionDetails));
+}
+
+function* sendTransaction() {
+  const walletProvider = new BrowserProvider(window.web3.currentProvider);
+
+  const signer: Signer = yield walletProvider.getSigner();
+
+  // Access transaction details from the Redux store
+  const transaction: TransactionDetails = yield select((state: RootState) => state.txDetails);
+
+  if (!transaction) {
+    console.error("Transaction details are not set.");
+    return;
+  }
 
   try {
     const txResponse: TransactionResponse =
@@ -49,19 +65,32 @@ function* sendTransaction() {
         value: (receipt.value && receipt.value.toString()) || "",
         data: receipt.data || null,
         chainId: (receipt.chainId && receipt.chainId.toString()) || "123456",
-        hash: receipt.hash,
-      },
+        hash: receipt.hash
+      }
     };
 
     yield apolloClient.mutate({
       mutation: SaveTransaction,
       variables,
     });
+
+    navigate(`/transaction/${receipt.hash}`);
+
+    yield apolloClient.query({
+      query: GetAllTransactions,
+      fetchPolicy: 'network-only'
+    });
+
+    yield put(closeModal());
+
   } catch (error) {
-    //
+    console.log(error)
   }
 }
 
 export function* rootSaga() {
-  yield takeEvery(Actions.SendTransaction, sendTransaction);
+  yield all([
+    takeEvery(Actions.SendTransaction, sendTransaction),
+    takeEvery(Actions.PrepareTransactionDetails, prepareTransactionDetails)
+  ]);
 }

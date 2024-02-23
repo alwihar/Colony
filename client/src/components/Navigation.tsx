@@ -1,10 +1,16 @@
-import React, { useCallback, useState } from "react";
-import Onboard, { WalletState } from "@web3-onboard/core";
+import React, { useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import Onboard from "@web3-onboard/core";
+import metamaskModule from "@web3-onboard/metamask";
 
 import SendTransaction from "./SendTransaction";
+import { setWallet } from "../store/actions";
+import { RootState } from "../store/reducers"
+
+const metamask = metamaskModule({options: {}});
 
 const onboard = Onboard({
-  wallets: [],
+  wallets: [metamask],
   chains: [
     {
       id: "123456",
@@ -16,24 +22,31 @@ const onboard = Onboard({
 });
 
 const Navigation: React.FC = () => {
-  const [wallet, setWallet] = useState<WalletState>();
+  const dispatch = useDispatch();
+  const walletAddress = useSelector((state: RootState) => state.walletAddress);
 
   const handleConnect = useCallback(async () => {
-    const wallets = await onboard.connectWallet();
+    try {
+      const wallets = await onboard.connectWallet();
 
-    const [metamaskWallet] = wallets;
+      const [metamaskWallet] = wallets;
 
-    if (
-      metamaskWallet.label === "MetaMask" &&
-      metamaskWallet.accounts[0].address
-    ) {
-      setWallet(metamaskWallet);
+      if (
+          metamaskWallet.label === "MetaMask" &&
+          metamaskWallet.accounts[0].address
+      ) {
+        dispatch(setWallet(metamaskWallet.accounts[0].address));
+      } else {
+        console.error("MetaMask wallet not found or no account connected.");
+      }
+    } catch (error) {
+      console.error("Failed to connect wallet:", error);
     }
   }, []);
 
   return (
-    <header className="flex flex-wrap sm:justify-start sm:flex-nowrap z-50 w-ful text-sm py-4 bg-gray-800">
-      <nav className="max-w-[85rem] w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between">
+    <header className="flex flex-wrap justify-between sm:justify-start z-50 w-full text-sm py-4 bg-gray-800">
+      <nav className="max-w-[85rem] w-full mx-auto px-4 flex items-center justify-between sm:justify-between">
         <div className="flex items-center justify-between">
           <a
             className="flex-none text-xl font-semibold dark:text-white"
@@ -42,17 +55,17 @@ const Navigation: React.FC = () => {
             Transactions List
           </a>
         </div>
-        <div className="hs-collapse hidden overflow-hidden transition-all duration-300 basis-full grow sm:block">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-end sm:mt-0 sm:pl-5">
-            {wallet && (
+        <div className="flex hs-collapse overflow-hidden transition-all duration-300">
+          <div className="flex flex-col sm:flex-row gap-5 items-center justify-end w-full sm:w-auto">
+            {walletAddress && (
               <>
                 <SendTransaction />
                 <p className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border-2 border-gray-200 font-semibold text-gray-200 text-sm">
-                  {wallet.accounts[0].address}
+                  {walletAddress}
                 </p>
               </>
             )}
-            {!wallet && (
+            {!walletAddress && (
               <button
                 type="button"
                 onClick={handleConnect}
